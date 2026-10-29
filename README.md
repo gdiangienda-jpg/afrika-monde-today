@@ -1,26 +1,28 @@
-# AFRIKA MONDE TODAY — Site web
+# AFRIKA MONDE TODAY
 
-Site vitrine responsive en HTML/CSS/JavaScript, prêt pour un déploiement statique sur Vercel.
+Site statique HTML/CSS/JavaScript déployable sur Vercel, avec catalogue YouTube via fonction serverless et administration Supabase.
 
-## YouTube
-- Chaîne officielle : https://www.youtube.com/@AfrikaMondeToday
-- Toutes les vidéos : https://www.youtube.com/@AfrikaMondeToday/videos
-- Onglet Direct : https://www.youtube.com/@AfrikaMondeToday/live
+## Configurer Supabase
+1. Crée un projet Supabase.
+2. Exécute `supabase/schema.sql` dans le SQL Editor.
+3. Dans Authentication > Users, crée le compte administrateur. Désactive les inscriptions publiques si elles ne sont pas nécessaires.
+4. Copie l'UUID du compte et exécute la requête commentée à la fin de `supabase/schema.sql` pour l'ajouter à `public.admin_users`.
+5. Dans `supabase-config.js`, remplace `YOUR_PROJECT_ID` et `YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY` par l'URL et la clé publishable/anon de ton projet. Ne mets jamais la clé secret/service_role dans le navigateur.
+6. Ouvre `/admin.html`, connecte-toi et enregistre le lien du direct. La configuration est persistante dans `site_settings` et protégée par RLS.
 
-Le site contient un lien vers la chaîne et une section vidéo intégrée. L'extraction complète des vidéos et playlists n'a pas pu être vérifiée automatiquement depuis la seule URL. Pour un catalogue synchronisé (titres, miniatures, playlists et nouvelles publications), connecter l'API YouTube Data avec une clé API ou fournir les URL/IDs des playlists officielles. Les cartes de programmes dans `index.html` restent des exemples à remplacer par les programmes confirmés.
+## Synchroniser le catalogue YouTube
+1. Active YouTube Data API v3 dans Google Cloud et crée une clé API.
+2. Dans Vercel > Project Settings > Environment Variables, ajoute `YOUTUBE_API_KEY`. Limite la clé à YouTube Data API v3 et conserve-la côté serveur.
+3. Redéploie le site. `/api/youtube` récupère la playlist de vidéos envoyées, les playlists et les directs actifs. La pagination permet de parcourir l'ensemble du catalogue.
+4. Le CDN garde les réponses en cache cinq minutes.
 
-## Administration du direct
-`admin.html` est un panneau de préparation du lien de direct. Il télécharge un fichier `site-settings.json` qui doit être ajouté au dépôt GitHub, puis redéployé sur Vercel. Cette version n'est PAS une authentification sécurisée et ne permet pas une mise à jour en direct sans redéploiement. Ne saisissez aucun mot de passe dans ce panneau.
+Documentation officielle : [Supabase Auth](https://supabase.com/docs/guides/auth), [Supabase JavaScript](https://supabase.com/docs/reference/javascript/installing), [YouTube Data API](https://developers.google.com/youtube/data/reference/rest).
 
-Pour un espace réellement sécurisé avec connexion et stockage persistant, il faut intégrer Supabase/Firebase avec authentification et règles d'accès côté serveur avant mise en production.
+## Vercel
+Importer le dépôt GitHub, choisir le preset Other, laisser la commande de build vide et utiliser le répertoire racine comme sortie. Configurer `YOUTUBE_API_KEY`, puis redéployer.
 
-## Déploiement Vercel
-1. Connecter le dépôt GitHub à Vercel.
-2. Framework Preset : Other.
-3. Laisser la commande de build vide et utiliser la racine comme sortie.
-4. Déployer.
-
-## À compléter
-- Remplacer les actualités et programmes de démonstration par les contenus réels.
-- Ajouter les liens officiels Facebook, Instagram, TikTok et WhatsApp.
-- Configurer une API YouTube pour synchroniser tout le catalogue.
+## Sécurité
+- La clé publishable/anon Supabase est publique et ne doit être utilisée qu'avec les règles RLS actives.
+- La clé secret/service_role Supabase ne doit jamais être mise dans le navigateur.
+- Les modifications de `site_settings` sont autorisées uniquement aux UUID inscrits dans `admin_users`.
+- La clé YouTube est conservée dans une variable d'environnement Vercel côté serveur.
